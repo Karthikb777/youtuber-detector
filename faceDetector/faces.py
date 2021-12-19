@@ -104,7 +104,7 @@ class youtuber_detector:
                     video_to_show = name
                     self.people_in_vid.add(name)
 
-                    #
+                    # detecting multiple people in the video
                     if len(self.people_in_vid) > 1 and not multiple_people:
                         print(f"people_in_vid: {self.people_in_vid}")
                         # yt_list = {v: k for k, v in self.youtuber_ids.items()}
@@ -123,14 +123,26 @@ class youtuber_detector:
                         multiple_people = True
                         cv2.waitKey(500)
 
+                    # adding the second video stream to show
                     if not showing_vid:
                         cap2 = cv2.VideoCapture(f"../resources/videos/{video_to_show}.mp4")
                         showing_vid = True
 
+                    # showing the second video
                     r2, frame2 = cap2.read()
+                    w2 = cap2.get(3)
+                    h2 = cap2.get(4)
+
                     frame2 = cv2.resize(frame2, (w + 100, h))
                     # todo: take care of the edge case where if the person moves out of the frame, the program crashes
-                    frame[y:y + h, x:x + w + 100] = frame2
+                    try:
+                        frame[y:y + h, x:x + w + 100] = frame2
+                    except ValueError as err:
+                        out_of_bounds = str(err).split()[-1]
+                        out_of_bounds = out_of_bounds.rstrip(')').lstrip('(').split(',')
+                        out_of_bounds = [int(i) for i in out_of_bounds]
+                        print(f" going out of bounds: {out_of_bounds}")
+                        frame[y:y+h, x-150: x+w+100-150] = frame2
 
                     if cv2.waitKey(3) == ord('q'):
                         break
@@ -156,5 +168,11 @@ class youtuber_detector:
 
 
 if __name__ == '__main__':
+    debug = True
+
     detector = youtuber_detector()
-    detector.init_voice()
+
+    if debug:
+        detector.recognize_faces()
+    else:
+        detector.init_voice()
