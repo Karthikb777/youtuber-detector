@@ -14,6 +14,7 @@ def speak(text):
     engine.say(text)
     engine.runAndWait()
 # if not necessary then delete this func
+
 def wishMe():
     hour=datetime.datetime.now().hour
     if hour>=0 and hour<12:
@@ -54,11 +55,12 @@ def openCamera():
 def takeCommand():
     r=sr.Recognizer()
     with sr.Microphone() as source:
+        r.adjust_for_ambient_noise(source, duration=0.2)
         print("Speak Now...")
         audio=r.listen(source)
 
         try:
-            statement=r.recognize_google(audio,language='en-in')
+            statement = r.recognize_google(audio,language='en-in')
             print(f"user said:{statement}\n")
 
         except Exception as e:

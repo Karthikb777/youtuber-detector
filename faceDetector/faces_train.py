@@ -5,7 +5,7 @@ import numpy as np
 import pickle
 
 # will give us the parent directory of this py file.
-BASE_DIR = os.path.dirname((os.path.abspath(__file__)))
+# BASE_DIR = os.path.dirname((os.path.abspath(__file__)))
 
 # saved pickle directory
 PICKLE_DIR = "..\\resources\\pickles\\"
@@ -21,6 +21,7 @@ x_train = []
 y_labels = []
 label_ids = dict()
 curr_id = 0
+
 
 # face classifier
 face_cascade = cv2.CascadeClassifier('../resources/cascades/data/haarcascade_frontalface_alt2.xml')

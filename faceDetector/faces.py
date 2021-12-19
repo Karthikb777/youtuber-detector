@@ -1,7 +1,6 @@
 import numpy as np
 import cv2
 import pickle
-import pafy
 from speechRecog import takeCommand, wishMe, speak
 
 
@@ -19,7 +18,7 @@ class youtuber_detector:
     people_in_vid = set()
 
     def init_voice(self):
-        wishMe()
+        # wishMe()
         while True:
             # speak("Tell me how can I help you now?")
             statement = takeCommand().lower()
@@ -31,13 +30,16 @@ class youtuber_detector:
                 self.recognize_faces()
                 break
 
-    def multiple_faces_warning(self):  # returns a value corresponding to the youtuber id.
+    def multiple_faces_warning(self):  # returns the youtuber's name.
         speak("Multiple faces detected, whose video do you want to play?")
+        print("Multiple faces detected, whose video do you want to play?\n")
         for person in self.people_in_vid:
             print(f"{self.youtuber_ids[person]} - {person}")
-        print("\n tell the id of the youtuber.......")
+
+        print("\ntell the id of the youtuber.......")
         statement = takeCommand().lower()
         print(f"user said: {statement}")
+
         yt_id_reversed = {v:k for k, v in self.youtuber_ids.items()}
         print(f"playing {yt_id_reversed[int(statement)]} video....")
         return yt_id_reversed[int(statement)]
@@ -100,18 +102,14 @@ class youtuber_detector:
                 id_, confidence = face_recognizer.predict(roi_gray)
                 if confidence >= 45:
                     name = labels[id_]
-                    # print(name)
                     video_to_show = name
                     self.people_in_vid.add(name)
 
                     # detecting multiple people in the video
                     if len(self.people_in_vid) > 1 and not multiple_people:
-                        print(f"people_in_vid: {self.people_in_vid}")
-                        # yt_list = {v: k for k, v in self.youtuber_ids.items()}
-                        yt_id = self.multiple_faces_warning()
-                        video_to_show = yt_id
+                        video_to_show = self.multiple_faces_warning()
 
-                        # the old command line option
+                        # THE OLD COMMAND LINE OPTION
                         # print("multiple people detected")
                         # print("whose video do you wanna play?")
                         # for n in people_in_vid:
@@ -130,32 +128,32 @@ class youtuber_detector:
 
                     # showing the second video
                     r2, frame2 = cap2.read()
-                    w2 = cap2.get(3)
-                    h2 = cap2.get(4)
-
                     frame2 = cv2.resize(frame2, (w + 100, h))
-                    # todo: take care of the edge case where if the person moves out of the frame, the program crashes
+
                     try:
                         frame[y:y + h, x:x + w + 100] = frame2
                     except ValueError as err:
-                        out_of_bounds = str(err).split()[-1]
-                        out_of_bounds = out_of_bounds.rstrip(')').lstrip('(').split(',')
-                        out_of_bounds = [int(i) for i in out_of_bounds]
-                        print(f" going out of bounds: {out_of_bounds}")
+
+                        # THIS IS NOT REQUIRED
+                        # out_of_bounds = str(err).split()[-1]
+                        # out_of_bounds = out_of_bounds.rstrip(')').lstrip('(').split(',')
+                        # out_of_bounds = [int(i) for i in out_of_bounds]
+                        # print(f" going out of bounds: {out_of_bounds}")
+
                         frame[y:y+h, x-150: x+w+100-150] = frame2
 
                     if cv2.waitKey(3) == ord('q'):
                         break
 
-                    # cv2.putText(frame, name, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 1)
+                    # cv2.putText(frame, video_to_show, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
 
                 #     specifying the color to draw a rectangle around the face
-                # TODO: instead of drawing a rectangle on the face, replace the face with the youtube video
+                # TODO: DONE instead of drawing a rectangle on the face, replace the face with the youtube video
                 # color = (255, 0, 0)  # (blue, green, red) 0-255
                 # stroke = 2
                 # end_cord_x = x + w
                 # end_cord_y = y + h
-                # cv2.rectangle(frame, (x-50, y-50), (end_cord_x+50, end_cord_y+50), color=color, thickness=stroke)
+                # cv2.rectangle(frame, (x, y), (end_cord_x, end_cord_y), color=color, thickness=stroke)
             # cv2.copyMakeBorder(frame, 50, 50, 50, 50, cv2.BORDER_CONSTANT, value=[0, 200, 200])
 
             cv2.imshow("frame", frame)
@@ -164,11 +162,12 @@ class youtuber_detector:
                 break
 
         cap.release()
+        cap2.release()
         cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
-    debug = True
+    debug = False
 
     detector = youtuber_detector()
 
